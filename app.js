@@ -11,6 +11,7 @@ const UserStat = require('./model/UserStat');
 const app = express();
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
+app.use(cors());
 
 app.get('/', async (req,res)=>{
     try {
