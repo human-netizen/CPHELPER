@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const {connectDB} = require('./db/connect'); 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); 
-
+const cors = require('cors');
 const User = require('./model/User'); 
 const UserStat = require('./model/UserStat');
 
