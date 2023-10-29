@@ -12,6 +12,14 @@ const app = express();
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 
+app.get('/', async (req,res)=>{
+    try {
+        res.status(200).json({msg:`hello niloy`}); 
+    } catch (error) {
+        console.log(error); 
+    }
+})
+
 app.get('/niloy/userstat', authenticateToken, async (req,res)=>{
     try {
         const user = await UserStat.findOne({handle:req.handle});
