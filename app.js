@@ -153,8 +153,14 @@ app.patch('/niloy/solvedProblem/:id', authenticateToken, async (req, res) => {
                 1
             )[0];
 
-            // Add the removed problem to the solvedProblems list
-            user.solvedProblems.push({ problemID, ...removedProblem });
+            // Preserve the 'time', 'note', and 'tag' fields when moving to the solvedProblems list
+            user.solvedProblems.push({
+                problemID,
+                ...removedProblem,
+                time: removedProblem.time,
+                note: removedProblem.note,
+                tag: removedProblem.tag,
+            });
         }
 
         await user.save();
@@ -164,6 +170,7 @@ app.patch('/niloy/solvedProblem/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 app.post('/niloy/register', async (req,res)=>{
     try {
