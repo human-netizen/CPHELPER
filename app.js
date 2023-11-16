@@ -33,20 +33,53 @@ app.get('/niloy/userstat', authenticateToken, async (req,res)=>{
     }
 })
 
-app.patch('/niloy/unsolvedProblem', authenticateToken, async (req,res)=>{
+// app.patch('/niloy/unsolvedProblem', authenticateToken, async (req,res)=>{
+//     try {
+//         const user = await UserStat.findOne({handle:req.handle});
+//         if(!user){
+//             return res.status(404).json({msg:`user not found`});
+//         }
+//         const problem = req.body;
+//         user.unsolvedProblems.push(problem);
+//         await user.save();
+//         res.status(200).json({user}); 
+//     } catch (error) {
+//         console.log(error); 
+//     }
+// })
+app.patch('/niloy/unsolvedProblem', authenticateToken, async (req, res) => {
     try {
-        const user = await UserStat.findOne({handle:req.handle});
-        if(!user){
-            return res.status(404).json({msg:`user not found`});
+        const user = await UserStat.findOne({ handle: req.handle });
+
+        if (!user) {
+            return res.status(404).json({ msg: `User not found` });
         }
-        const problem = req.body;
-        user.unsolvedProblems.push(problem);
+
+        const { problemID, ...updatedProblemData } = req.body;
+
+        // Check if the problemID exists in the user's unsolvedProblems array
+        const existingProblemIndex = user.unsolvedProblems.findIndex(
+            (problem) => problem.problemID === problemID
+        );
+
+        if (existingProblemIndex !== -1) {
+            // If the problemID exists, update the existing problem with new data
+            user.unsolvedProblems[existingProblemIndex] = {
+                ...user.unsolvedProblems[existingProblemIndex],
+                ...updatedProblemData,
+            };
+        } else {
+            // If the problemID doesn't exist, add a new problem to the list
+            user.unsolvedProblems.push({ problemID, ...updatedProblemData });
+        }
+
         await user.save();
-        res.status(200).json({user}); 
+        res.status(200).json({ user });
     } catch (error) {
-        console.log(error); 
+        console.log(error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-})
+});
 
 
 app.patch('/niloy/solvedProblem/:id', authenticateToken, async (req,res)=>{
