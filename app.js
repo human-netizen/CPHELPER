@@ -87,27 +87,83 @@ app.patch('/niloy/unsolvedProblem', authenticateToken, async (req, res) => {
 
 
 
-app.patch('/niloy/solvedProblem/:id', authenticateToken, async (req,res)=>{
-    try {
-        const user = await UserStat.findOne({handle:req.handle}); 
-        if(!user){
-            return res.status(404).json({msg:`no user found`});
-        }
-        const problemID = req.params.id;
-        const problemIndex = user.unsolvedProblems.findIndex(problem=>problem.problemID===problemID);
-        if(problemIndex===-1){
-            return res.status(404).json({msg:`problem with the id ${problemID} not found in the unsolved list for this user`}); 
-        }
-        user.unsolvedProblems.splice(problemIndex, 1);
-        const newSolvedProblem = req.body;
-        user.solvedProblems.push(newSolvedProblem);
-        await user.save(); 
-        res.status(200).json({user}); 
-    } catch (error) {
-        console.log(error); 
-    }
-})
+// app.patch('/niloy/solvedProblem/:id', authenticateToken, async (req,res)=>{
+//     try {
+//         const user = await UserStat.findOne({handle:req.handle}); 
+//         if(!user){
+//             return res.status(404).json({msg:`no user found`});
+//         }
+//         const problemID = req.params.id;
+//         const problemIndex1 = user.solvedProblems.findIndex(problem=>problem.problemID===problemID);
 
+
+
+//         const problemIndex = user.unsolvedProblems.findIndex(problem=>problem.problemID===problemID);
+
+//         if(problemIndex===-1){
+//             return res.status(404).json({msg:`problem with the id ${problemID} not found in the unsolved list for this user`}); 
+//         }
+//         user.unsolvedProblems.splice(problemIndex, 1);
+//         const newSolvedProblem = req.body;
+//         user.solvedProblems.push(newSolvedProblem);
+//         await user.save(); 
+//         res.status(200).json({user}); 
+//     } catch (error) {
+//         console.log(error); 
+//     }
+// })
+
+app.patch('/niloy/solvedProblem/:id', authenticateToken, async (req, res) => {
+    try {
+        const user = await UserStat.findOne({ handle: req.handle });
+
+        if (!user) {
+            return res.status(404).json({ msg: `No user found` });
+        }
+
+        const problemID = req.params.id;
+
+        // Check if the problemID exists in the solvedProblems array
+        const solvedProblemIndex = user.solvedProblems.findIndex(
+            (problem) => problem.problemID === problemID
+        );
+
+        if (solvedProblemIndex !== -1) {
+            // If the problemID exists in the solvedProblems list, update it
+            user.solvedProblems[solvedProblemIndex] = {
+                ...user.solvedProblems[solvedProblemIndex],
+                ...req.body,
+            };
+        } else {
+            // If the problemID doesn't exist in the solvedProblems list,
+            // check if it exists in the unsolvedProblems list
+            const unsolvedProblemIndex = user.unsolvedProblems.findIndex(
+                (problem) => problem.problemID === problemID
+            );
+
+            if (unsolvedProblemIndex === -1) {
+                return res.status(404).json({
+                    msg: `Problem with the id ${problemID} not found in the unsolved list for this user`,
+                });
+            }
+
+            // Remove the problem from the unsolvedProblems list
+            const removedProblem = user.unsolvedProblems.splice(
+                unsolvedProblemIndex,
+                1
+            )[0];
+
+            // Add the removed problem to the solvedProblems list
+            user.solvedProblems.push({ problemID, ...removedProblem });
+        }
+
+        await user.save();
+        res.status(200).json({ user });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 app.post('/niloy/register', async (req,res)=>{
     try {
