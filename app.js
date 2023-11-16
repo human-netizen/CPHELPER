@@ -47,6 +47,8 @@ app.get('/niloy/userstat', authenticateToken, async (req,res)=>{
 //         console.log(error); 
 //     }
 // })
+
+
 app.patch('/niloy/unsolvedProblem', authenticateToken, async (req, res) => {
     try {
         const user = await UserStat.findOne({ handle: req.handle });
@@ -66,6 +68,7 @@ app.patch('/niloy/unsolvedProblem', authenticateToken, async (req, res) => {
             // If the problemID exists, update the existing problem with new data
             user.unsolvedProblems[existingProblemIndex] = {
                 ...user.unsolvedProblems[existingProblemIndex],
+                problemID,  // Keep the problemID intact
                 ...updatedProblemData,
             };
         } else {
@@ -77,9 +80,11 @@ app.patch('/niloy/unsolvedProblem', authenticateToken, async (req, res) => {
         res.status(200).json({ user });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: 'Internal Server Error ok' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+
 
 
 app.patch('/niloy/solvedProblem/:id', authenticateToken, async (req,res)=>{
